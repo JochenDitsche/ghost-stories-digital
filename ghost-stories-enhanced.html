@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Stories - Digital (Enhanced)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+            padding: 15px;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .game-header h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #e94560, #ff6b6b, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(233, 69, 96, 0.6);
+        }
+
+        .phase-indicator {
+            background: rgba(233, 69, 96, 0.3);
+            border: 2px solid #e94560;
+            border-radius: 25px;
+            padding: 8px 20px;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-box:hover { transform: scale(1.05); }
+        .stat-box.village { border-color: #4ecdc4; }
+        .stat-box.yin-yang { border-color: #ffe66d; }
+        .stat-box.ghosts { border-color: #e94560; }
+        .stat-box.buddha { border-color: #a8e6cf; }
+        .stat-box.tao { border-color: #c9b1ff; }
+        .stat-box.deck { border-color: #ff8b94; }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .village-tile {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #2d3436, #636e72);
+            border: 3px solid;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 10px;
+        }
+
+        .village-tile:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 25px rgba(255,255,255,0.2);
+        }
+
+        .village-tile.haunted {
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 5px #e94560; }
+            50% { box-shadow: 0 0 30px #e94560, 0 0 60px #e94560; }
+        }
+
+        .village-tile.selected {
+            box-shadow: 0 0 0 4px #ffe66d, 0 0 30px #ffe66d;
+        }
+
+        .village-name {
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .village-token {
+            font-size: 2rem;
+        }
+
+        .ghost-track {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 3px 10px rgba(233, 69, 96, 0.5);
+        }
+
+        .buddha-indicator {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            font-size: 1.2rem;
+        }
+
+        .monks-on-tile {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            display: flex;
+            gap: 2px;
+        }
+
+        .monk-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .player-area {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            border: 2px solid #4ecdc4;
+        }
+
+        .player-area h2 {
+            color: #4ecdc4;
+            margin-bottom: 12px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .monks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .monk-card {
+            background: linear-gradient(135deg, rgba(30, 55, 153, 0.8), rgba(74, 105, 189, 0.8));
+            border: 3px solid;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .monk-card:hover {
+            transform: translateX(5px);
+        }
+
+        .monk-card.active {
+            box-shadow: 0 0 20px currentColor;
+            transform: scale(1.05);
+        }
+
+        .monk-card.dead {
+            opacity: 0.4;
+            filter: grayscale(100%);
+        }
+
+        .monk-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .monk-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .monk-health {
+            font-size: 1.2rem;
+        }
+
+        .monk-ability {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .monk-position {
+            font-size: 0.7rem;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .action-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            border: 2px solid #ffe66d;
+        }
+
+        .action-panel h3 {
+            color: #ffe66d;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-move { 
+            background: linear-gradient(135deg, #4ecdc4, #44a3aa); 
+            color: #1a1a2e; 
+        }
+        .btn-exorcise { 
+            background: linear-gradient(135deg, #e94560, #ff6b6b); 
+            color: white; 
+        }
+        .btn-ability { 
+            background: linear-gradient(135deg, #ffe66d, #f4d03f); 
+            color: #1a1a2e; 
+        }
+        .btn-meditate { 
+            background: linear-gradient(135deg, #a8e6cf, #7fcdcd); 
+            color: #1a1a2e; 
+        }
+        .btn-buddha {
+            background: linear-gradient(135deg, #c9b1ff, #a8e6cf);
+            color: #1a1a2e;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,255,255,0.3);
+        }
+
+        .ghost-deck-panel {
+            background: linear-gradient(135deg, #2d132c, #801336);
+            border: 3px solid #e94560;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .ghost-deck-panel h3 {
+            color: #e94560;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .deck-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 10px 0;
+        }
+
+        .deck-stat {
+            text-align: center;
+        }
+
+        .deck-stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .deck-stat-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .log-area {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-entry.ghost { color: #ff8b94; }
+        .log-entry.player { color: #4ecdc4; }
+        .log-entry.success { color: #a8e6cf; }
+        .log-entry.warning { color: #ffe66d; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a3e, #16213e);
+            border: 3px solid;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .modal-content.victory { border-color: #a8e6cf; }
+        .modal-content.defeat { border-color: #e94560; }
+
+        .modal-content h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .modal-content.victory h2 { color: #a8e6cf; }
+        .modal-content.defeat h2 { color: #e94560; }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .help-text {
+            background: rgba(78, 205, 196, 0.1);
+            border-left: 3px solid #4ecdc4;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-header">
+        <h1>👻 Ghost Stories Enhanced</h1>
+        <div class="phase-indicator" id="phase-indicator">🌙 Yin-Phase: Ziehe Geister</div>
+    </div>
+
+    <div class="game-stats">
+        <div class="stat-box village">
+            <span class="stat-value" id="village-health">4</span>
+            <span class="stat-label">🏘️ Dorfbewohner</span>
+        </div>
+        <div class="stat-box yin-yang">
+            <span class="stat-value" id="yin-yang">4</span>
+            <span class="stat-label">☯️ Yin-Yang</span>
+        </div>
+        <div class="stat-box tao">
+            <span class="stat-value" id="tao-tokens">0</span>
+            <span class="stat-label">📿 Tao-Token</span>
+        </div>
+        <div class="stat-box buddha">
+            <span class="stat-value" id="buddha-count">0</span>
+            <span class="stat-label">🛕 Buddhas</span>
+        </div>
+        <div class="stat-box ghosts">
+            <span class="stat-value" id="ghost-count">0</span>
+            <span class="stat-label">👻 Geister</span>
+        </div>
+        <div class="stat-box deck">
+            <span class="stat-value" id="deck-count">20</span>
+            <span class="stat-label">🎴 Deck</span>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="game-board" id="game-board">
+            <!-- Wird per JavaScript generiert -->
+        </div>
+
+        <div class="sidebar">
+            <div class="player-area">
+                <h2>Taoistische Mönche</h2>
+                <div class="monks-container" id="monks-container">
+                    <!-- Wird per JavaScript generiert -->
+                </div>
+                <div class="help-text" id="ability-hint">
+                    Wähle einen Mönch für Details zu seinen Fähigkeiten
+                </div>
+            </div>
+
+            <div class="action-panel">
+                <h3>Aktionen</h3>
+                <div class="action-buttons">
+                    <button class="btn btn-move" onclick="game.moveMonk()" id="btn-move">
+                        🚶 Bewegen
+                    </button>
+                    <button class="btn btn-exorcise" onclick="game.exorcise()" id="btn-exorcise">
+                        ⚔️ Exorzieren
+                    </button>
+                    <button class="btn btn-ability" onclick="game.useAbility()" id="btn-ability">
+                        ✨ Fähigkeit
+                    </button>
+                    <button class="btn btn-buddha" onclick="game.placeBuddha()" id="btn-buddha">
+                        🛕 Buddha
+                    </button>
+                    <button class="btn btn-meditate" onclick="game.meditate()" id="btn-meditate">
+                        🧘 Meditieren
+                    </button>
+                </div>
+            </div>
+
+            <div class="ghost-deck-panel">
+                <h3>👻 Geister-Deck</h3>
+                <div class="deck-info">
+                    <div class="deck-stat">
+                        <span class="deck-stat-value" id="deck-remaining">20</span>
+                        <span class="deck-stat-label">Verbleibend</span>
+                    </div>
+                    <div class="deck-stat">
+                        <span class="deck-stat-value" id="incarnation">0</span>
+                        <span class="deck-stat-label">Wu-Feng</span>
+                    </div>
+                </div>
+                <button class="btn btn-exorcise" onclick="game.drawGhostPhase()" id="btn-draw" style="width: 100%; margin-top: 10px;">
+                    🎴 Geister ziehen (Yin)
+                </button>
+            </div>
+
+            <div class="log-area" id="log-area">
+                <div class="log-entry">🎮 Ghost Stories Enhanced gestartet!</div>
+                <div class="log-entry">🎯 Ziel: Besiege alle Geister bevor das Dorf fällt!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="game-modal">
+        <div class="modal-content" id="modal-content">
+            <h2 id="modal-title">Spielende</h2>
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button class="btn btn-move" onclick="game.restart()">🔄 Neustart</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Spiel-Konfiguration
+        const VILLAGE_TILES = [
+            { name: "Buddha-Tempel", token: "🛕", color: "#4ecdc4", buddha: true },
+            { name: "Vergessene Festung", token: "🏯", color: "#ffd93d" },
+            { name: "Friedhof", token: "⚰️", color: "#95a5a6" },
+            { name: "Opferaltar", token: "⛩️", color: "#e74c3c" },
+            { name: "Wetterturm", token: "🌪️", color: "#9b59b6" },
+            { name: "Höhle des Weisen", token: "🗿", color: "#34495e" },
+            { name: "Kreis der Gebete", token: "🕯️", color: "#f39c12", start: true },
+            { name: "Totenacker", token: "🪦", color: "#7f8c8d" },
+            { name: "Geistertor", token: "🚪", color: "#c0392b", dangerous: true }
+        ];
+
+        const MONKS = [
+            { 
+                name: "Blauer Mönch (Xuán Wù)", 
+                color: "#3498db", 
+                ability: "Windläufer", 
+                abilityDesc: "Fliege zu JEDEM beliebigen Feld (1x/Runde)",
+                health: 4,
+                canFly: true
+            },
+            { 
+                name: "Grüner Mönch (Qīng Lóng)", 
+                color: "#27ae60", 
+                ability: "Heiler", 
+                abilityDesc: "Heile 1 Dorfbewohner oder 1 eigenes Qi (1x/Runde)",
+                health: 4,
+                canHeal: true
+            },
+            { 
+                name: "Gelber Mönch (Huáng Lóng)", 
+                color: "#f1c40f", 
+                ability: "Waffenmeister", 
+                abilityDesc: "Wirf 4 Würfel statt 3 beim Exorzismus",
+                health: 4,
+                extraDie: true
+            },
+            { 
+                name: "Roter Mönch (Zhū Què)", 
+                color: "#e74c3c", 
+                ability: "Flammenklinge", 
+                abilityDesc: "Zerstöre 2 Geister mit einem Erfolg",
+                health: 4,
+                doubleDamage: true
+            }
+        ];
+
+        class GhostStoriesGame {
+            constructor() {
+                this.villageHealth = 4;
+                this.yinYang = 4;
+                this.taoTokens = 0;
+                this.buddhaCount = 0;
+                this.ghostCount = 0;
+                this.deckCount = 20;
+                this.incarnationLevel = 0;
+                this.currentMonk = 0;
+                this.phase = 'yin'; // 'yin' oder 'yang'
+                this.gameOver = false;
+                this.selectedTile = null;
+                this.abilityUsed = [false, false, false, false];
+                
+                this.villages = VILLAGE_TILES.map((tile, index) => ({
+                    ...tile,
+                    id: index,
+                    haunted: false,
+                    ghostLevel: 0,
+                    monks: [],
+                    buddha: tile.buddha || false
+                }));
+                
+                this.monks = MONKS.map((monk, index) => ({
+                    ...monk,
+                    id: index,
+                    position: 6, // Start: Kreis der Gebete
+                    health: 4,
+                    active: index === 0,
+                    dead: false
+                }));
+
+                // Setze Startposition
+                this.villages[6].monks = [0, 1, 2, 3];
+                
+                this.init();
+            }
+
+            init() {
+                this.renderBoard();
+                this.renderMonks();
+                this.updateStats();
+                this.log("🎮 Ghost Stories Enhanced gestartet!", "player");
+                this.log("🎯 Besiege Wu-Feng und seine Geisterhorden!", "player");
+                this.log("👻 Yin-Phase: Ziehe Geister vom Deck!", "ghost");
+            }
+
+            renderBoard() {
+                const board = document.getElementById('game-board');
+                board.innerHTML = this.villages.map((village, index) => `
+                    <div class="village-tile ${village.haunted ? 'haunted' : ''} ${this.selectedTile === index ? 'selected' : ''}" 
+                         onclick="game.selectTile(${index})"
+                         style="border-color: ${village.color}">
+                        <div class="village-name">${village.name}</div>
+                        <div class="village-token">${village.token}</div>
+                        ${village.ghostLevel > 0 ? `<div class="ghost-track">${village.ghostLevel}</div>` : ''}
+                        ${village.buddha ? '<div class="buddha-indicator">🛕</div>' : ''}
+                        <div class="monks-on-tile">
+                            ${village.monks.map(m => {
+                                const monk = this.monks[m];
+                                return `<div class="monk-icon" style="background: ${monk.color}; ${monk.dead ? 'opacity:0.3' : ''}"></div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            renderMonks() {
+                const container = document.getElementById('monks-container');
+                container.innerHTML = this.monks.map((monk, index) => `
+                    <div class="monk-card ${monk.active ? 'active' : ''} ${monk.dead ? 'dead' : ''}" 
+                         style="border-color: ${monk.color}; color: ${monk.color}"
+                         onclick="game.selectMonk(${index})">
+                        <div class="monk-header">
+                            <span class="monk-name">${monk.name.split(' ')[0] + ' ' + monk.name.split(' ')[1]}</span>
+                            <span class="monk-health">${'❤️'.repeat(monk.health)}${'🖤'.repeat(4-monk.health)}</span>
+                        </div>
+                        <div class="monk-ability">${monk.ability}: ${monk.abilityDesc}</div>
+                        <div class="monk-position">📍 ${this.villages[monk.position].name}</div>
+                    </div>
+                `).join('');
+            }
+
+            updateStats() {
+                document.getElementById('village-health').textContent = this.villageHealth;
+                document.getElementById('yin-yang').textContent = this.yinYang;
+                document.getElementById('tao-tokens').textContent = this.taoTokens;
+                document.getElementById('buddha-count').textContent = this.buddhaCount;
+                document.getElementById('ghost-count').textContent = this.ghostCount;
+                document.getElementById('deck-count').textContent = this.deckCount;
+                document.getElementById('deck-remaining').textContent = this.deckCount;
+                document.getElementById('incarnation').textContent = this.incarnationLevel;
+
+                // Phase-Anzeige
+                const phaseIndicator = document.getElementById('phase-indicator');
+                if (this.phase === 'yin') {
+                    phaseIndicator.textContent = '🌙 Yin-Phase: Ziehe Geister';
+                    phaseIndicator.style.background = 'rgba(233, 69, 96, 0.3)';
+                    phaseIndicator.style.borderColor = '#e94560';
+                } else {
+                    phaseIndicator.textContent = '☀️ Yang-Phase: Mönch agiert';
+                    phaseIndicator.style.background = 'rgba(78, 205, 196, 0.3)';
+                    phaseIndicator.style.borderColor = '#4ecdc4';
+                }
+
+                // Button-Status
+                document.getElementById('btn-draw').disabled = this.phase !== 'yin' || this.gameOver;
+                document.getElementById('btn-move').disabled = this.phase !== 'yang' || this.gameOver;
+                document.getElementById('btn-exorcise').disabled = this.phase !== 'yang' || this.gameOver;
+                document.getElementById('btn-ability').disabled = this.phase !== 'yang' || this.gameOver || this.abilityUsed[this.currentMonk];
+                document.getElementById('btn-buddha').disabled = this.phase !== 'yang' || this.gameOver || this.buddhaCount < 1;
+                document.getElementById('btn-meditate').disabled = this.phase !== 'yang' || this.gameOver;
+            }
+
+            log(message, type = 'default') {
+                const logArea = document.getElementById('log-area');
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                entry.textContent = message;
+                logArea.insertBefore(entry, logArea.firstChild);
+                if (logArea.children.length > 20) {
+                    logArea.removeChild(logArea.lastChild);
+                }
+            }
+
+            selectTile(index) {
+                if (this.gameOver) return;
+                this.selectedTile = index;
+                this.renderBoard();
+            }
+
+            selectMonk(index) {
+                if (this.gameOver || this.monks[index].dead) return;
+                this.monks[this.currentMonk].active = false;
+                this.currentMonk = index;
+                this.monks[index].active = true;
+                this.renderMonks();
+                
+                const monk = this.monks[index];
+                document.getElementById('ability-hint').innerHTML = `
+                    <strong>${monk.ability}:</strong> ${monk.abilityDesc}
+                    ${this.abilityUsed[index] ? '<br><em>(Bereits eingesetzt)</em>' : ''}
+                `;
+            }
+
+            // YIN-PHASE: Geister ziehen
+            drawGhostPhase() {
+                if (this.gameOver || this.phase !== 'yin') return;
+                
+                // Ziehe so viele Geister wie aktive Mönche
+                const ghostCount = this.monks.filter(m => !m.dead).length;
+                
+                for (let i = 0; i < ghostCount; i++) {
+                    if (this.deckCount <= 0) break;
+                    
+                    this.deckCount--;
+                    
+                    // Wu-Feng erscheint bei Deckende
+                    if (this.deckCount === 0) {
+                        this.incarnationLevel = 1;
+                        this.log("🔥 WU-FENG ERSCHEINT! Die Inkarnation des Bösen!", "warning");
+                        this.spawnGhost(true);
+                    } else {
+                        this.spawnGhost(false);
+                    }
+                }
+                
+                // Geister bewegen sich
+                this.moveGhosts();
+                
+                // Wechsle zu Yang-Phase
+                this.phase = 'yang';
+                this.abilityUsed = [false, false, false, false];
+                this.log("☀️ Yang-Phase beginnt! Mönche können handeln.", "player");
+                this.updateStats();
+            }
+
+            spawnGhost(isWuFeng = false) {
+                // Wähle zufälliges Feld (bevorzugt Geistertor und gefährliche Bereiche)
+                let spawnTile;
+                if (Math.random() < 0.3) {
+                    // 30% Chance auf Geistertor
+                    spawnTile = 8;
+                } else {
+                    spawnTile = Math.floor(Math.random() * 9);
+                }
+                
+                this.villages[spawnTile].haunted = true;
+                this.villages[spawnTile].ghostLevel++;
+                this.ghostCount++;
+                
+                const tileName = this.villages[spawnTile].name;
+                if (isWuFeng) {
+                    this.log(`🔥 Wu-Feng erscheint in ${tileName}!`, "warning");
+                } else {
+                    this.log(`👻 Geister erscheinen in ${tileName}!`, "ghost");
+                }
+                
+                // Prüfe Übernahme
+                if (this.villages[spawnTile].ghostLevel >= 3) {
+                    this.villageHealth--;
+                    this.villages[spawnTile].ghostLevel = 3;
+                    this.log(`💀 ${tileName} wurde überrannt! Dorf verliert 1 Gesundheit.`, "warning");
+                    
+                    if (this.villageHealth <= 0) {
+                        this.endGame(false);
+                    }
+                }
+            }
+
+            moveGhosts() {
+                // Geister bewegen sich zu angrenzenden Feldern
+                for (let i = 0; i < this.villages.length; i++) {
+                    if (this.villages[i].ghostLevel > 0 && Math.random() < 0.3) {
+                        // Finde angrenzende Felder
+                        const adjacent = this.getAdjacentTiles(i);
+                        if (adjacent.length > 0) {
+                            const target = adjacent[Math.floor(Math.random() * adjacent.length)];
+                            // Bewege einen Geister
+                            if (this.villages[i].ghostLevel > 1) {
+                                this.villages[i].ghostLevel--;
+                                this.villages[target].haunted = true;
+                                this.villages[target].ghostLevel++;
+                                this.log(`👻 Geister wandern von ${this.villages[i].name} nach ${this.villages[target].name}`, "ghost");
+                            }
+                        }
+                    }
+                }
+                this.renderBoard();
+            }
+
+            getAdjacentTiles(index) {
+                // 3x3 Grid: Finde Nachbarn
+                const row = Math.floor(index / 3);
+                const col = index % 3;
+                const adjacent = [];
+                
+                const directions = [[-1,0], [1,0], [0,-1], [0,1]];
+                for (let [dr, dc] of directions) {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    if (newRow >= 0 && newRow < 3 && newCol >= 0 && newCol < 3) {
+                        adjacent.push(newRow * 3 + newCol);
+                    }
+                }
+                return adjacent;
+            }
+
+            // YANG-PHASE: Mönch-Aktionen
+            moveMonk() {
+                if (this.gameOver || this.phase !== 'yang') return;
+                
+                const monk = this.monks[this.currentMonk];
+                
+                if (monk.dead) {
+                    this.log("💀 Dieser Mönch ist bereits tot!", "warning");
+                    return;
+                }
+                
+                // Blauer Mönch kann überall hinfliegen
+                if (monk.canFly && !this.abilityUsed[this.currentMonk]) {
+                    this.log(`✨ ${monk.name} nutzt Windläufer und fliegt zu einem beliebigen Feld!`, "success");
+                    this.abilityUsed[this.currentMonk] = true;
+                }
+                
+                if (this.selectedTile === null) {
+                    this.log("🎯 Wähle erst ein Zielfeld (klicke auf ein Dorf)!", "warning");
+                    return;
+                }
+                
+                // Entferne vom alten Feld
+                this.villages[monk.position].monks = this.villages[monk.position].monks.filter(m => m !== monk.id);
+                
+                // Bewege zum neuen Feld
+                monk.position = this.selectedTile;
+                this.villages[this.selectedTile].monks.push(monk.id);
+                
+                this.log(`${monk.name.split(' ')[0]} bewegt sich nach ${this.villages[this.selectedTile].name}`, "player");
+                
+                this.selectedTile = null;
+                this.renderBoard();
+                this.renderMonks();
+                this.nextMonk();
+            }
+
+            exorcise() {
+                if (this.gameOver || this.phase !== 'yang') return;
+                
+                const monk = this.monks[this.currentMonk];
+                const village = this.villages[monk.position];
+                
+                if (monk.dead) {
+                    this.log("💀 Tote Mönche können nicht exorzieren!", "warning");
+                    return;
+                }
+                
+                if (!village.haunted) {
+                    this.log("✨ Hier gibt es keine Geister zu exorzieren!", "warning");
+                    return;
+                }
+                
+                // Würfel-Mechanismus
+                const diceCount = monk.extraDie ? 4 : 3;
+                let rolls = [];
+                let successes = 0;
+                
+                for (let i = 0; i < diceCount; i++) {
+                    const roll = Math.floor(Math.random() * 6) + 1;
+                    rolls.push(roll);
+                    if (roll >= 4) successes++;
+                }
+                
+                this.log(`🎲 ${monk.name.split(' ')[0]} würfelt: [${rolls.join(', ')}] → ${successes} Erfolge`, "player");
+                
+                if (successes > 0) {
+                    const damage = monk.doubleDamage ? Math.min(successes * 2, village.ghostLevel) : Math.min(successes, village.ghostLevel);
+                    
+                    for (let i = 0; i < damage; i++) {
+                        if (village.ghostLevel > 0) {
+                            village.ghostLevel--;
+                            this.ghostCount--;
+                            
+                            // Tao-Token Chance
+                            if (Math.random() < 0.3) {
+                                this.taoTokens++;
+                                this.log("📿 Tao-Token gefunden!", "success");
+                            }
+                        }
+                    }
+                    
+                    if (village.ghostLevel <= 0) {
+                        village.haunted = false;
+                        village.ghostLevel = 0;
+                        this.log(`✅ ${village.name} wurde gereinigt!`, "success");
+                    } else {
+                        this.log(`⚔️ ${damage} Geister besiegt! Noch ${village.ghostLevel} übrig.`, "success");
+                    }
+                    
+                    this.updateStats();
+                    this.renderBoard();
+                } else {
+                    this.log("❌ Exorzismus fehlgeschlagen!", "warning");
+                }
+                
+                this.nextMonk();
+            }
+
+            useAbility() {
+                if (this.gameOver || this.phase !== 'yang') return;
+                
+                const monk = this.monks[this.currentMonk];
+                
+                if (monk.dead) {
+                    this.log("💀 Tote Mönche können keine Fähigkeiten nutzen!", "warning");
+                    return;
+                }
+                
+                if (this.abilityUsed[this.currentMonk]) {
+                    this.log("⚠️ Fähigkeit wurde bereits diese Runde eingesetzt!", "warning");
+                    return;
+                }
+                
+                this.abilityUsed[this.currentMonk] = true;
+                
+                // Grüner Mönch: Heilen
+                if (monk.canHeal) {
+                    if (this.villageHealth < 4) {
+                        this.villageHealth++;
+                        this.log(`💚 ${monk.name.split(' ')[0]} heilt 1 Dorfbewohner!`, "success");
+                    } else if (monk.health < 4) {
+                        monk.health++;
+                        this.log(`💚 ${monk.name.split(' ')[0]} heilt sich selbst (+1 Qi)!`, "success");
+                    }
+                }
+                
+                // Blauer Mönch: Flug wird in moveMonk() behandelt
+                if (monk.canFly) {
+                    this.log(`✨ ${monk.name.split(' ')[0]} aktiviert Windläufer! Kann jetzt zu einem beliebigen Feld fliegen.`, "success");
+                }
+                
+                // Gelber und Roter Mönch: Passive Fähigkeiten
+                if (monk.extraDie) {
+                    this.log(`⚔️ ${monk.name.split(' ')[0]} aktiviert Waffenmeister! Wirft beim nächsten Exorzismus 4 Würfel.`, "success");
+                }
+                
+                if (monk.doubleDamage) {
+                    this.log(`🔥 ${monk.name.split(' ')[0]} aktiviert Flammenklinge! Zerstört 2 Geister pro Erfolg.`, "success");
+                }
+                
+                this.updateStats();
+                this.renderMonks();
+            }
+
+            placeBuddha() {
+                if (this.gameOver || this.phase !== 'yang' || this.buddhaCount < 1) return;
+                
+                const monk = this.monks[this.currentMonk];
+                
+                if (this.selectedTile === null) {
+                    this.log("🎯 Wähle ein Feld für den Buddha!", "warning");
+                    return;
+                }
+                
+                this.buddhaCount--;
+                this.villages[this.selectedTile].buddha = true;
+                
+                // Buddha blockiert Geister
+                if (this.villages[this.selectedTile].ghostLevel > 0) {
+                    this.villages[this.selectedTile].ghostLevel = 0;
+                    this.villages[this.selectedTile].haunted = false;
+                    this.ghostCount--;
+                    this.log(`🛕 Buddha in ${this.villages[this.selectedTile].name} platziert! Geister wurden gebannt.`, "success");
+                } else {
+                    this.log(`🛕 Buddha in ${this.villages[this.selectedTile].name} platziert! Schützt vor Geistern.`, "success");
+                }
+                
+                this.selectedTile = null;
+                this.updateStats();
+                this.renderBoard();
+                this.nextMonk();
+            }
+
+            meditate() {
+                if (this.gameOver || this.phase !== 'yang') return;
+                
+                const monk = this.monks[this.currentMonk];
+                
+                if (monk.dead) {
+                    this.log("🧘 Tote Mönche können nicht meditieren!", "warning");
+                    return;
+                }
+                
+                this.yinYang = Math.min(this.yinYang + 1, 8);
+                this.log(`🧘 ${monk.name.split(' ')[0]} meditiert und sammelt Qi. Yin-Yang: ${this.yinYang}`, "success");
+                
+                this.updateStats();
+                this.nextMonk();
+            }
+
+            nextMonk() {
+                // Prüfe ob alle Mönche dran waren
+                let allPlayed = true;
+                let nextIndex = this.currentMonk;
+                
+                for (let i = 1; i <= 4; i++) {
+                    const checkIndex = (this.currentMonk + i) % 4;
+                    if (!this.monks[checkIndex].dead && !this.monks[checkIndex].hasPlayed) {
+                        allPlayed = false;
+                        nextIndex = checkIndex;
+                        break;
+                    }
+                }
+                
+                if (allPlayed) {
+                    // Runde vorbei, zurück zu Yin-Phase
+                    this.phase = 'yin';
+                    this.monks.forEach(m => m.hasPlayed = false);
+                    this.log("🌙 Alle Mönche haben gespielt. Yin-Phase beginnt!", "ghost");
+                } else {
+                    this.monks[this.currentMonk].hasPlayed = true;
+                    this.monks[this.currentMonk].active = false;
+                    this.currentMonk = nextIndex;
+                    this.monks[this.currentMonk].active = true;
+                }
+                
+                this.updateStats();
+                this.renderMonks();
+            }
+
+            endGame(victory) {
+                this.gameOver = true;
+                const modal = document.getElementById('game-modal');
+                const content = document.getElementById('modal-content');
+                const title = document.getElementById('modal-title');
+                const message = document.getElementById('modal-message');
+                
+                if (victory) {
+                    content.className = 'modal-content victory';
+                    title.textContent = "🎉 Sieg!";
+                    message.innerHTML = `Das Dorf wurde gerettet!<br><br>
+                        Wu-Feng wurde besiegt!<br>
+                        Verbleibende Dorfbewohner: ${this.villageHealth}<br>
+                        Gesammelte Tao-Token: ${this.taoTokens}`;
+                } else {
+                    content.className = 'modal-content defeat';
+                    title.textContent = "💀 Niederlage";
+                    message.innerHTML = `Das Dorf wurde von den Geistern überrannt...<br><br>
+                        Wu-Feng triumphiert!<br>
+                        Geister im Dorf: ${this.ghostCount}`;
+                }
+                
+                modal.classList.add('active');
+            }
+
+            restart() {
+                location.reload();
+            }
+        }
+
+        // Spiel starten
+        const game = new GhostStoriesGame();
+    </script>
+</body>
+</html>

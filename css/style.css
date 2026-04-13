@@ -232,6 +232,57 @@ body {
     }
 }
 
+.villagers-on-tile {
+    display: flex;
+    gap: 1px;
+    justify-content: center;
+    margin-bottom: 2px;
+}
+
+.villager-icon {
+    font-size: 0.65rem;
+    opacity: 0.9;
+}
+
+@media (min-width: 600px) {
+    .villager-icon {
+        font-size: 0.75rem;
+    }
+}
+
+.wu-feng-indicator {
+    font-size: 1.4rem;
+    background: linear-gradient(135deg, #ff0000, #800000);
+    border: 2px solid #ffd700;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+    animation: pulse-wu-feng 1.5s infinite;
+}
+
+@media (min-width: 600px) {
+    .wu-feng-indicator {
+        font-size: 1.8rem;
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@keyframes pulse-wu-feng {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 0, 0, 0.8); }
+    50% { transform: scale(1.1); box-shadow: 0 0 25px rgba(255, 0, 0, 1), 0 0 40px rgba(255, 215, 0, 0.5); }
+}
+
+.village-tile.wu-feng-here {
+    border-width: 4px;
+    border-style: dashed;
+}
+
 .sidebar {
     display: flex;
     flex-direction: column;

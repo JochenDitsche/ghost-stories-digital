@@ -1,14 +1,14 @@
 // Spiel-Konfiguration
 const VILLAGE_TILES = [
-    { name: "Buddha-Tempel", token: "🛕", color: "#4ecdc4", buddha: true },
-    { name: "Festung", token: "🏯", color: "#ffd93d" },
-    { name: "Friedhof", token: "⚰️", color: "#95a5a6" },
-    { name: "Altar", token: "⛩️", color: "#e74c3c" },
-    { name: "Wetterturm", token: "🌪️", color: "#9b59b6" },
-    { name: "Höhle", token: "🗿", color: "#34495e" },
-    { name: "Gebete", token: "🕯️", color: "#f39c12", start: true },
-    { name: "Totenacker", token: "🪦", color: "#7f8c8d" },
-    { name: "Geistertor", token: "🚪", color: "#c0392b", dangerous: true }
+    { name: "Buddha-Tempel", token: "🛕", color: "#4ecdc4", buddha: true, villagers: 2 },
+    { name: "Festung", token: "🏯", color: "#ffd93d", villagers: 3 },
+    { name: "Friedhof", token: "⚰️", color: "#95a5a6", villagers: 1 },
+    { name: "Altar", token: "⛩️", color: "#e74c3c", villagers: 2 },
+    { name: "Wetterturm", token: "🌪️", color: "#9b59b6", villagers: 1 },
+    { name: "Höhle", token: "🗿", color: "#34495e", villagers: 2 },
+    { name: "Gebete", token: "🕯️", color: "#f39c12", start: true, villagers: 3 },
+    { name: "Totenacker", token: "🪦", color: "#7f8c8d", villagers: 1 },
+    { name: "Geistertor", token: "🚪", color: "#c0392b", dangerous: true, villagers: 1 }
 ];
 
 const MONKS = [
@@ -64,6 +64,8 @@ class GhostStoriesGame {
         this.gameOver = false;
         this.selectedTile = null;
         this.abilityUsed = [false, false, false, false];
+        this.wuFengHealth = 0;
+        this.wuFengTile = null;
         
         this.villages = VILLAGE_TILES.map((tile, index) => ({
             ...tile,
@@ -93,14 +95,16 @@ class GhostStoriesGame {
         this.renderMonks();
         this.updateStats();
         this.log("🎮 Ghost Stories Enhanced gestartet!", "player");
-        this.log("🎯 Besiege Wu-Feng und seine Geisterhorden!", "player");
+        this.log("🎯 Besiege Wu-Feng und rette das Dorf!", "player");
         this.log("👻 Yin-Phase: Ziehe Geister vom Deck!", "ghost");
     }
 
     renderBoard() {
         const board = document.getElementById('game-board');
-        board.innerHTML = this.villages.map((village, index) => `
-            <div class="village-tile ${village.haunted ? 'haunted' : ''} ${this.selectedTile === index ? 'selected' : ''}" 
+        board.innerHTML = this.villages.map((village, index) => {
+            const hasWuFeng = this.wuFengTile === index && this.wuFengHealth > 0;
+            return `
+            <div class="village-tile ${village.haunted ? 'haunted' : ''} ${this.selectedTile === index ? 'selected' : ''} ${hasWuFeng ? 'wu-feng-here' : ''}" 
                  onclick="game.selectTile(${index})"
                  style="border-color: ${village.color}">
                 <div class="tile-header">
@@ -109,6 +113,8 @@ class GhostStoriesGame {
                 </div>
                 <div class="village-token">${village.token}</div>
                 <div class="tile-footer">
+                    ${hasWuFeng ? `<div class="wu-feng-indicator" title="Wu-Feng (${this.wuFengHealth} HP)">🔥</div>` : ''}
+                    ${village.villagers > 0 ? `<div class="villagers-on-tile">${'👤'.repeat(village.villagers)}</div>` : ''}
                     ${village.buddha ? '<div class="buddha-indicator">🛕</div>' : ''}
                     <div class="monks-on-tile">
                         ${village.monks.map(m => {
@@ -118,7 +124,7 @@ class GhostStoriesGame {
                     </div>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     renderMonks() {
@@ -210,13 +216,17 @@ class GhostStoriesGame {
             if (this.deckCount === 0) {
                 this.incarnationLevel = 1;
                 this.log("🔥 WU-FENG ERSCHEINT! Die Inkarnation des Bösen!", "warning");
-                this.spawnGhost(true);
+                this.spawnWuFeng();
             } else {
                 this.spawnGhost(false);
             }
         }
         
         this.moveGhosts();
+        
+        if (this.wuFengHealth > 0) {
+            this.wuFengAttack();
+        }
         
         this.phase = 'yang';
         this.abilityUsed = [false, false, false, false];
@@ -236,6 +246,12 @@ class GhostStoriesGame {
         this.villages[spawnTile].ghostLevel++;
         this.ghostCount++;
         
+        // Dorfbewohner werden zuerst gefressen
+        if (this.villages[spawnTile].villagers > 0) {
+            this.villages[spawnTile].villagers--;
+            this.log(`😱 Geister fressen 1 Dorfbewohner in ${this.villages[spawnTile].name}!`, "warning");
+        }
+        
         const tileName = this.villages[spawnTile].name;
         if (isWuFeng) {
             this.log(`🔥 Wu-Feng erscheint in ${tileName}!`, "warning");
@@ -243,7 +259,8 @@ class GhostStoriesGame {
             this.log(`👻 Geister erscheinen in ${tileName}!`, "ghost");
         }
         
-        if (this.villages[spawnTile].ghostLevel >= 3) {
+        // Nur wenn keine Dorfbewohner mehr da sind, nimmt das Dorf Schaden
+        if (this.villages[spawnTile].ghostLevel >= 3 && this.villages[spawnTile].villagers <= 0) {
             this.villageHealth--;
             this.villages[spawnTile].ghostLevel = 3;
             this.log(`💀 ${tileName} wurde überrannt! Dorf verliert 1 Gesundheit.`, "warning");
@@ -252,6 +269,65 @@ class GhostStoriesGame {
                 this.endGame(false);
             }
         }
+    }
+
+    spawnWuFeng() {
+        let spawnTile;
+        if (Math.random() < 0.5) {
+            spawnTile = 8; // Geistertor bevorzugt
+        } else {
+            spawnTile = Math.floor(Math.random() * 9);
+        }
+        
+        this.wuFengTile = spawnTile;
+        this.wuFengHealth = 4;
+        this.villages[spawnTile].haunted = true;
+        
+        // Frisst sofort alle Dorfbewohner
+        if (this.villages[spawnTile].villagers > 0) {
+            this.villages[spawnTile].villagers = 0;
+            this.log(`🔥 Wu-Feng verschlingt alle Dorfbewohner in ${this.villages[spawnTile].name}!`, "warning");
+        }
+        
+        this.log(`🔥 Wu-Feng hat ${this.wuFengHealth} Lebenspunkte! Besiegt ihn, um das Dorf zu retten!`, "warning");
+    }
+
+    wuFengAttack() {
+        if (!this.wuFengTile || this.wuFengHealth <= 0) return;
+        
+        const roll = Math.random();
+        
+        if (roll < 0.4) {
+            // Greift Mönche auf seinem Feld an
+            const victims = this.villages[this.wuFengTile].monks;
+            if (victims.length > 0) {
+                victims.forEach(m => {
+                    if (!this.monks[m].dead) {
+                        this.monks[m].health--;
+                        this.log(`🔥 Wu-Feng greift ${this.monks[m].shortName} an! (-1 Qi)`, "warning");
+                        if (this.monks[m].health <= 0) {
+                            this.monks[m].dead = true;
+                            this.monks[m].health = 0;
+                            this.log(`💀 ${this.monks[m].shortName} ist gestorben!`, "warning");
+                        }
+                    }
+                });
+            }
+        } else if (roll < 0.7) {
+            // Spawnt zusätzliche Geister
+            this.villages[this.wuFengTile].ghostLevel++;
+            this.ghostCount++;
+            this.log(`🔥 Wu-Feng ruft weitere Geister herbei!`, "warning");
+        } else {
+            // Verursacht Dorfschaden
+            this.villageHealth--;
+            this.log(`🔥 Wu-Fengs Flammen zerstören Teile des Dorfes! (-1 Dorf-HP)`, "warning");
+            if (this.villageHealth <= 0) {
+                this.endGame(false);
+            }
+        }
+        
+        this.renderMonks();
     }
 
     moveGhosts() {
@@ -350,7 +426,23 @@ class GhostStoriesGame {
         this.log(`🎲 ${monk.shortName} würfelt: [${rolls.join(', ')}] → ${successes} Erfolge`, "player");
         
         if (successes > 0) {
-            const damage = monk.doubleDamage ? Math.min(successes * 2, village.ghostLevel) : Math.min(successes, village.ghostLevel);
+            // Wu-Feng Kampf
+            if (this.wuFengTile === monk.position && this.wuFengHealth > 0) {
+                const wuFengDamage = successes;
+                this.wuFengHealth -= wuFengDamage;
+                this.log(`⚔️ Wu-Feng nimmt ${wuFengDamage} Schaden! Noch ${Math.max(0, this.wuFengHealth)} HP.`, "success");
+                
+                if (this.wuFengHealth <= 0) {
+                    this.wuFengHealth = 0;
+                    this.log("🎉 Wu-Feng wurde besiegt! Das Dorf ist gerettet!", "success");
+                    this.endGame(true);
+                    return;
+                }
+            }
+            
+            // Normale Geister
+            const remainingSuccesses = (this.wuFengTile === monk.position) ? 0 : successes;
+            const damage = monk.doubleDamage ? Math.min(remainingSuccesses * 2, village.ghostLevel) : Math.min(remainingSuccesses, village.ghostLevel);
             
             for (let i = 0; i < damage; i++) {
                 if (village.ghostLevel > 0) {
@@ -364,12 +456,19 @@ class GhostStoriesGame {
                 }
             }
             
-            if (village.ghostLevel <= 0) {
+            if (village.ghostLevel <= 0 && village.monks.length === 0) {
                 village.haunted = false;
                 village.ghostLevel = 0;
-                this.log(`✅ ${village.name} wurde gereinigt!`, "success");
-            } else {
-                this.log(`⚔️ ${damage} Geister besiegt! Noch ${village.ghostLevel} übrig.`, "success");
+            } else if (village.ghostLevel <= 0) {
+                village.ghostLevel = 0;
+            }
+            
+            if (damage > 0) {
+                if (village.ghostLevel === 0) {
+                    this.log(`✅ ${village.name} wurde gereinigt!`, "success");
+                } else {
+                    this.log(`⚔️ ${damage} Geister besiegt! Noch ${village.ghostLevel} übrig.`, "success");
+                }
             }
             
             this.updateStats();
@@ -438,10 +537,11 @@ class GhostStoriesGame {
         this.villages[this.selectedTile].buddha = true;
         
         if (this.villages[this.selectedTile].ghostLevel > 0) {
+            const cleared = this.villages[this.selectedTile].ghostLevel;
             this.villages[this.selectedTile].ghostLevel = 0;
             this.villages[this.selectedTile].haunted = false;
-            this.ghostCount--;
-            this.log(`🛕 Buddha in ${this.villages[this.selectedTile].name} platziert! Geister wurden gebannt.`, "success");
+            this.ghostCount -= cleared;
+            this.log(`🛕 Buddha in ${this.villages[this.selectedTile].name} platziert! ${cleared} Geister wurden gebannt.`, "success");
         } else {
             this.log(`🛕 Buddha in ${this.villages[this.selectedTile].name} platziert! Schützt vor Geistern.`, "success");
         }

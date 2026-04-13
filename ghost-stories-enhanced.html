@@ -16,52 +16,57 @@
             background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0f3460 100%);
             min-height: 100vh;
             color: #e8e8e8;
-            padding: 15px;
+            padding: 10px;
         }
 
         .game-header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .game-header h1 {
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             background: linear-gradient(135deg, #e94560, #ff6b6b, #ffd93d);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 40px rgba(233, 69, 96, 0.6);
+            text-shadow: 0 0 30px rgba(233, 69, 96, 0.4);
         }
 
         .phase-indicator {
             background: rgba(233, 69, 96, 0.3);
             border: 2px solid #e94560;
-            border-radius: 25px;
-            padding: 8px 20px;
+            border-radius: 20px;
+            padding: 6px 16px;
             display: inline-block;
-            margin-top: 10px;
+            margin-top: 8px;
             font-weight: bold;
+            font-size: 0.9rem;
         }
 
         .game-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
-            max-width: 900px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
 
-        .stat-box {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 12px;
-            border-radius: 12px;
-            border: 2px solid;
-            text-align: center;
-            transition: transform 0.2s;
+        @media (min-width: 600px) {
+            .game-stats {
+                grid-template-columns: repeat(6, 1fr);
+            }
         }
 
-        .stat-box:hover { transform: scale(1.05); }
+        .stat-box {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 4px;
+            border-radius: 10px;
+            border: 2px solid;
+            text-align: center;
+        }
+
         .stat-box.village { border-color: #4ecdc4; }
         .stat-box.yin-yang { border-color: #ffe66d; }
         .stat-box.ghosts { border-color: #e94560; }
@@ -70,54 +75,68 @@
         .stat-box.deck { border-color: #ff8b94; }
 
         .stat-value {
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: bold;
             display: block;
         }
 
         .stat-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             opacity: 0.9;
         }
 
         .main-container {
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
             max-width: 1200px;
             margin: 0 auto;
         }
 
-        @media (max-width: 900px) {
+        @media (min-width: 900px) {
             .main-container {
-                grid-template-columns: 1fr;
+                flex-direction: row;
+            }
+            .game-board {
+                flex: 1;
+            }
+            .sidebar {
+                width: 340px;
+                flex-shrink: 0;
             }
         }
 
         .game-board {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
 
         .village-tile {
-            aspect-ratio: 1;
+            min-height: 130px;
             background: linear-gradient(135deg, #2d3436, #636e72);
             border: 3px solid;
             border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            position: relative;
+            justify-content: flex-start;
             cursor: pointer;
             transition: all 0.3s;
-            padding: 10px;
+            padding: 8px 6px;
+            position: relative;
+        }
+
+        @media (min-width: 600px) {
+            .village-tile {
+                min-height: 160px;
+                padding: 10px;
+            }
         }
 
         .village-tile:hover {
-            transform: scale(1.03);
-            box-shadow: 0 0 25px rgba(255,255,255,0.2);
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255,255,255,0.15);
         }
 
         .village-tile.haunted {
@@ -126,81 +145,118 @@
 
         @keyframes pulse-red {
             0%, 100% { box-shadow: 0 0 5px #e94560; }
-            50% { box-shadow: 0 0 30px #e94560, 0 0 60px #e94560; }
+            50% { box-shadow: 0 0 20px #e94560, 0 0 40px #e94560; }
         }
 
         .village-tile.selected {
-            box-shadow: 0 0 0 4px #ffe66d, 0 0 30px #ffe66d;
+            box-shadow: 0 0 0 3px #ffe66d, 0 0 20px #ffe66d;
+        }
+
+        .tile-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            margin-bottom: 4px;
         }
 
         .village-name {
             font-weight: bold;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             text-align: center;
-            margin-bottom: 8px;
+            line-height: 1.2;
         }
 
-        .village-token {
-            font-size: 2rem;
+        @media (min-width: 600px) {
+            .village-name {
+                font-size: 0.85rem;
+            }
         }
 
-        .ghost-track {
-            position: absolute;
-            top: -8px;
-            right: -8px;
+        .ghost-badge {
             background: linear-gradient(135deg, #e94560, #ff6b6b);
             color: white;
-            width: 32px;
-            height: 32px;
+            min-width: 22px;
+            height: 22px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1rem;
-            box-shadow: 0 3px 10px rgba(233, 69, 96, 0.5);
+            font-size: 0.8rem;
+            box-shadow: 0 2px 6px rgba(233, 69, 96, 0.5);
+            flex-shrink: 0;
+        }
+
+        .village-token {
+            font-size: 1.8rem;
+            margin: 4px 0;
+        }
+
+        @media (min-width: 600px) {
+            .village-token {
+                font-size: 2.2rem;
+                margin: 6px 0;
+            }
+        }
+
+        .tile-footer {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            width: 100%;
         }
 
         .buddha-indicator {
-            position: absolute;
-            bottom: 5px;
-            left: 5px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            background: rgba(168, 230, 207, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
         }
 
         .monks-on-tile {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
             display: flex;
-            gap: 2px;
+            gap: 4px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .monk-icon {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             border: 2px solid white;
+            flex-shrink: 0;
+        }
+
+        @media (min-width: 600px) {
+            .monk-icon {
+                width: 22px;
+                height: 22px;
+            }
         }
 
         .sidebar {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .player-area {
             background: rgba(0, 0, 0, 0.4);
             border-radius: 15px;
-            padding: 15px;
+            padding: 12px;
             border: 2px solid #4ecdc4;
         }
 
         .player-area h2 {
             color: #4ecdc4;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             text-align: center;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
         .monks-container {
@@ -213,19 +269,18 @@
             background: linear-gradient(135deg, rgba(30, 55, 153, 0.8), rgba(74, 105, 189, 0.8));
             border: 3px solid;
             border-radius: 10px;
-            padding: 10px;
+            padding: 8px;
             cursor: pointer;
             transition: all 0.3s;
-            position: relative;
         }
 
         .monk-card:hover {
-            transform: translateX(5px);
+            transform: translateX(3px);
         }
 
         .monk-card.active {
-            box-shadow: 0 0 20px currentColor;
-            transform: scale(1.05);
+            box-shadow: 0 0 15px currentColor;
+            transform: scale(1.02);
         }
 
         .monk-card.dead {
@@ -237,34 +292,34 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .monk-name {
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
         }
 
         .monk-health {
-            font-size: 1.2rem;
+            font-size: 1rem;
         }
 
         .monk-ability {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             opacity: 0.9;
             font-style: italic;
         }
 
         .monk-position {
             font-size: 0.7rem;
-            margin-top: 5px;
+            margin-top: 4px;
             opacity: 0.8;
         }
 
         .action-panel {
             background: rgba(0, 0, 0, 0.4);
             border-radius: 15px;
-            padding: 15px;
+            padding: 12px;
             border: 2px solid #ffe66d;
         }
 
@@ -272,7 +327,7 @@
             color: #ffe66d;
             margin-bottom: 10px;
             text-align: center;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
 
         .action-buttons {
@@ -282,13 +337,14 @@
         }
 
         .btn {
-            padding: 10px;
+            padding: 10px 6px;
             border: none;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.3s;
             font-weight: bold;
+            line-height: 1.2;
         }
 
         .btn:disabled {
@@ -320,27 +376,27 @@
 
         .btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255,255,255,0.3);
+            box-shadow: 0 4px 12px rgba(255,255,255,0.25);
         }
 
         .ghost-deck-panel {
             background: linear-gradient(135deg, #2d132c, #801336);
             border: 3px solid #e94560;
             border-radius: 15px;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
         }
 
         .ghost-deck-panel h3 {
             color: #e94560;
             margin-bottom: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
 
         .deck-info {
             display: flex;
             justify-content: space-around;
-            margin: 10px 0;
+            margin: 8px 0;
         }
 
         .deck-stat {
@@ -348,7 +404,7 @@
         }
 
         .deck-stat-value {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: bold;
             display: block;
         }
@@ -361,14 +417,14 @@
         .log-area {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 10px;
-            padding: 12px;
-            max-height: 150px;
+            padding: 10px;
+            max-height: 140px;
             overflow-y: auto;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .log-entry {
-            padding: 4px 0;
+            padding: 3px 0;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
@@ -392,6 +448,7 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
 
         .modal.active {
@@ -402,17 +459,18 @@
             background: linear-gradient(135deg, #1a1a3e, #16213e);
             border: 3px solid;
             border-radius: 20px;
-            padding: 30px;
-            max-width: 450px;
+            padding: 25px;
+            max-width: 400px;
             text-align: center;
+            width: 100%;
         }
 
         .modal-content.victory { border-color: #a8e6cf; }
         .modal-content.defeat { border-color: #e94560; }
 
         .modal-content h2 {
-            font-size: 2rem;
-            margin-bottom: 15px;
+            font-size: 1.8rem;
+            margin-bottom: 12px;
         }
 
         .modal-content.victory h2 { color: #a8e6cf; }
@@ -420,27 +478,18 @@
 
         .modal-buttons {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 18px;
         }
 
         .help-text {
             background: rgba(78, 205, 196, 0.1);
             border-left: 3px solid #4ecdc4;
-            padding: 10px;
-            margin-top: 10px;
-            font-size: 0.8rem;
+            padding: 8px;
+            margin-top: 8px;
+            font-size: 0.75rem;
             border-radius: 0 8px 8px 0;
-        }
-
-        @media (max-width: 768px) {
-            .game-board {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .main-container {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -453,7 +502,7 @@
     <div class="game-stats">
         <div class="stat-box village">
             <span class="stat-value" id="village-health">4</span>
-            <span class="stat-label">🏘️ Dorfbewohner</span>
+            <span class="stat-label">🏘️ Dorf</span>
         </div>
         <div class="stat-box yin-yang">
             <span class="stat-value" id="yin-yang">4</span>
@@ -461,11 +510,11 @@
         </div>
         <div class="stat-box tao">
             <span class="stat-value" id="tao-tokens">0</span>
-            <span class="stat-label">📿 Tao-Token</span>
+            <span class="stat-label">📿 Tao</span>
         </div>
         <div class="stat-box buddha">
             <span class="stat-value" id="buddha-count">0</span>
-            <span class="stat-label">🛕 Buddhas</span>
+            <span class="stat-label">🛕 Buddha</span>
         </div>
         <div class="stat-box ghosts">
             <span class="stat-value" id="ghost-count">0</span>
@@ -553,12 +602,12 @@
         // Spiel-Konfiguration
         const VILLAGE_TILES = [
             { name: "Buddha-Tempel", token: "🛕", color: "#4ecdc4", buddha: true },
-            { name: "Vergessene Festung", token: "🏯", color: "#ffd93d" },
+            { name: "Festung", token: "🏯", color: "#ffd93d" },
             { name: "Friedhof", token: "⚰️", color: "#95a5a6" },
-            { name: "Opferaltar", token: "⛩️", color: "#e74c3c" },
+            { name: "Altar", token: "⛩️", color: "#e74c3c" },
             { name: "Wetterturm", token: "🌪️", color: "#9b59b6" },
-            { name: "Höhle des Weisen", token: "🗿", color: "#34495e" },
-            { name: "Kreis der Gebete", token: "🕯️", color: "#f39c12", start: true },
+            { name: "Höhle", token: "🗿", color: "#34495e" },
+            { name: "Gebete", token: "🕯️", color: "#f39c12", start: true },
             { name: "Totenacker", token: "🪦", color: "#7f8c8d" },
             { name: "Geistertor", token: "🚪", color: "#c0392b", dangerous: true }
         ];
@@ -566,33 +615,37 @@
         const MONKS = [
             { 
                 name: "Blauer Mönch (Xuán Wù)", 
+                shortName: "Blauer Mönch",
                 color: "#3498db", 
                 ability: "Windläufer", 
-                abilityDesc: "Fliege zu JEDEM beliebigen Feld (1x/Runde)",
+                abilityDesc: "Fliege zu JEDEM Feld (1x/Runde)",
                 health: 4,
                 canFly: true
             },
             { 
                 name: "Grüner Mönch (Qīng Lóng)", 
+                shortName: "Grüner Mönch",
                 color: "#27ae60", 
                 ability: "Heiler", 
-                abilityDesc: "Heile 1 Dorfbewohner oder 1 eigenes Qi (1x/Runde)",
+                abilityDesc: "Heile Dorf oder Qi (1x/Runde)",
                 health: 4,
                 canHeal: true
             },
             { 
                 name: "Gelber Mönch (Huáng Lóng)", 
+                shortName: "Gelber Mönch",
                 color: "#f1c40f", 
                 ability: "Waffenmeister", 
-                abilityDesc: "Wirf 4 Würfel statt 3 beim Exorzismus",
+                abilityDesc: "Wirf 4 statt 3 Würfel",
                 health: 4,
                 extraDie: true
             },
             { 
                 name: "Roter Mönch (Zhū Què)", 
+                shortName: "Roter Mönch",
                 color: "#e74c3c", 
                 ability: "Flammenklinge", 
-                abilityDesc: "Zerstöre 2 Geister mit einem Erfolg",
+                abilityDesc: "2 Geister pro Erfolg",
                 health: 4,
                 doubleDamage: true
             }
@@ -608,7 +661,7 @@
                 this.deckCount = 20;
                 this.incarnationLevel = 0;
                 this.currentMonk = 0;
-                this.phase = 'yin'; // 'yin' oder 'yang'
+                this.phase = 'yin';
                 this.gameOver = false;
                 this.selectedTile = null;
                 this.abilityUsed = [false, false, false, false];
@@ -625,13 +678,12 @@
                 this.monks = MONKS.map((monk, index) => ({
                     ...monk,
                     id: index,
-                    position: 6, // Start: Kreis der Gebete
+                    position: 6,
                     health: 4,
                     active: index === 0,
                     dead: false
                 }));
 
-                // Setze Startposition
                 this.villages[6].monks = [0, 1, 2, 3];
                 
                 this.init();
@@ -652,15 +704,19 @@
                     <div class="village-tile ${village.haunted ? 'haunted' : ''} ${this.selectedTile === index ? 'selected' : ''}" 
                          onclick="game.selectTile(${index})"
                          style="border-color: ${village.color}">
-                        <div class="village-name">${village.name}</div>
+                        <div class="tile-header">
+                            <span class="village-name">${village.name}</span>
+                            ${village.ghostLevel > 0 ? `<span class="ghost-badge">${village.ghostLevel}</span>` : ''}
+                        </div>
                         <div class="village-token">${village.token}</div>
-                        ${village.ghostLevel > 0 ? `<div class="ghost-track">${village.ghostLevel}</div>` : ''}
-                        ${village.buddha ? '<div class="buddha-indicator">🛕</div>' : ''}
-                        <div class="monks-on-tile">
-                            ${village.monks.map(m => {
-                                const monk = this.monks[m];
-                                return `<div class="monk-icon" style="background: ${monk.color}; ${monk.dead ? 'opacity:0.3' : ''}"></div>`;
-                            }).join('')}
+                        <div class="tile-footer">
+                            ${village.buddha ? '<div class="buddha-indicator">🛕</div>' : ''}
+                            <div class="monks-on-tile">
+                                ${village.monks.map(m => {
+                                    const monk = this.monks[m];
+                                    return `<div class="monk-icon" style="background: ${monk.color}; ${monk.dead ? 'opacity:0.3' : ''}" title="${monk.shortName}"></div>`;
+                                }).join('')}
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -673,7 +729,7 @@
                          style="border-color: ${monk.color}; color: ${monk.color}"
                          onclick="game.selectMonk(${index})">
                         <div class="monk-header">
-                            <span class="monk-name">${monk.name.split(' ')[0] + ' ' + monk.name.split(' ')[1]}</span>
+                            <span class="monk-name">${monk.shortName}</span>
                             <span class="monk-health">${'❤️'.repeat(monk.health)}${'🖤'.repeat(4-monk.health)}</span>
                         </div>
                         <div class="monk-ability">${monk.ability}: ${monk.abilityDesc}</div>
@@ -692,7 +748,6 @@
                 document.getElementById('deck-remaining').textContent = this.deckCount;
                 document.getElementById('incarnation').textContent = this.incarnationLevel;
 
-                // Phase-Anzeige
                 const phaseIndicator = document.getElementById('phase-indicator');
                 if (this.phase === 'yin') {
                     phaseIndicator.textContent = '🌙 Yin-Phase: Ziehe Geister';
@@ -704,7 +759,6 @@
                     phaseIndicator.style.borderColor = '#4ecdc4';
                 }
 
-                // Button-Status
                 document.getElementById('btn-draw').disabled = this.phase !== 'yin' || this.gameOver;
                 document.getElementById('btn-move').disabled = this.phase !== 'yang' || this.gameOver;
                 document.getElementById('btn-exorcise').disabled = this.phase !== 'yang' || this.gameOver;
@@ -744,11 +798,9 @@
                 `;
             }
 
-            // YIN-PHASE: Geister ziehen
             drawGhostPhase() {
                 if (this.gameOver || this.phase !== 'yin') return;
                 
-                // Ziehe so viele Geister wie aktive Mönche
                 const ghostCount = this.monks.filter(m => !m.dead).length;
                 
                 for (let i = 0; i < ghostCount; i++) {
@@ -756,7 +808,6 @@
                     
                     this.deckCount--;
                     
-                    // Wu-Feng erscheint bei Deckende
                     if (this.deckCount === 0) {
                         this.incarnationLevel = 1;
                         this.log("🔥 WU-FENG ERSCHEINT! Die Inkarnation des Bösen!", "warning");
@@ -766,10 +817,8 @@
                     }
                 }
                 
-                // Geister bewegen sich
                 this.moveGhosts();
                 
-                // Wechsle zu Yang-Phase
                 this.phase = 'yang';
                 this.abilityUsed = [false, false, false, false];
                 this.log("☀️ Yang-Phase beginnt! Mönche können handeln.", "player");
@@ -777,10 +826,8 @@
             }
 
             spawnGhost(isWuFeng = false) {
-                // Wähle zufälliges Feld (bevorzugt Geistertor und gefährliche Bereiche)
                 let spawnTile;
                 if (Math.random() < 0.3) {
-                    // 30% Chance auf Geistertor
                     spawnTile = 8;
                 } else {
                     spawnTile = Math.floor(Math.random() * 9);
@@ -797,7 +844,6 @@
                     this.log(`👻 Geister erscheinen in ${tileName}!`, "ghost");
                 }
                 
-                // Prüfe Übernahme
                 if (this.villages[spawnTile].ghostLevel >= 3) {
                     this.villageHealth--;
                     this.villages[spawnTile].ghostLevel = 3;
@@ -810,14 +856,11 @@
             }
 
             moveGhosts() {
-                // Geister bewegen sich zu angrenzenden Feldern
                 for (let i = 0; i < this.villages.length; i++) {
                     if (this.villages[i].ghostLevel > 0 && Math.random() < 0.3) {
-                        // Finde angrenzende Felder
                         const adjacent = this.getAdjacentTiles(i);
                         if (adjacent.length > 0) {
                             const target = adjacent[Math.floor(Math.random() * adjacent.length)];
-                            // Bewege einen Geister
                             if (this.villages[i].ghostLevel > 1) {
                                 this.villages[i].ghostLevel--;
                                 this.villages[target].haunted = true;
@@ -831,7 +874,6 @@
             }
 
             getAdjacentTiles(index) {
-                // 3x3 Grid: Finde Nachbarn
                 const row = Math.floor(index / 3);
                 const col = index % 3;
                 const adjacent = [];
@@ -847,7 +889,6 @@
                 return adjacent;
             }
 
-            // YANG-PHASE: Mönch-Aktionen
             moveMonk() {
                 if (this.gameOver || this.phase !== 'yang') return;
                 
@@ -858,9 +899,8 @@
                     return;
                 }
                 
-                // Blauer Mönch kann überall hinfliegen
                 if (monk.canFly && !this.abilityUsed[this.currentMonk]) {
-                    this.log(`✨ ${monk.name} nutzt Windläufer und fliegt zu einem beliebigen Feld!`, "success");
+                    this.log(`✨ ${monk.shortName} nutzt Windläufer und fliegt zu einem beliebigen Feld!`, "success");
                     this.abilityUsed[this.currentMonk] = true;
                 }
                 
@@ -869,14 +909,12 @@
                     return;
                 }
                 
-                // Entferne vom alten Feld
                 this.villages[monk.position].monks = this.villages[monk.position].monks.filter(m => m !== monk.id);
                 
-                // Bewege zum neuen Feld
                 monk.position = this.selectedTile;
                 this.villages[this.selectedTile].monks.push(monk.id);
                 
-                this.log(`${monk.name.split(' ')[0]} bewegt sich nach ${this.villages[this.selectedTile].name}`, "player");
+                this.log(`${monk.shortName} bewegt sich nach ${this.villages[this.selectedTile].name}`, "player");
                 
                 this.selectedTile = null;
                 this.renderBoard();
@@ -900,7 +938,6 @@
                     return;
                 }
                 
-                // Würfel-Mechanismus
                 const diceCount = monk.extraDie ? 4 : 3;
                 let rolls = [];
                 let successes = 0;
@@ -911,7 +948,7 @@
                     if (roll >= 4) successes++;
                 }
                 
-                this.log(`🎲 ${monk.name.split(' ')[0]} würfelt: [${rolls.join(', ')}] → ${successes} Erfolge`, "player");
+                this.log(`🎲 ${monk.shortName} würfelt: [${rolls.join(', ')}] → ${successes} Erfolge`, "player");
                 
                 if (successes > 0) {
                     const damage = monk.doubleDamage ? Math.min(successes * 2, village.ghostLevel) : Math.min(successes, village.ghostLevel);
@@ -921,7 +958,6 @@
                             village.ghostLevel--;
                             this.ghostCount--;
                             
-                            // Tao-Token Chance
                             if (Math.random() < 0.3) {
                                 this.taoTokens++;
                                 this.log("📿 Tao-Token gefunden!", "success");
@@ -963,29 +999,26 @@
                 
                 this.abilityUsed[this.currentMonk] = true;
                 
-                // Grüner Mönch: Heilen
                 if (monk.canHeal) {
                     if (this.villageHealth < 4) {
                         this.villageHealth++;
-                        this.log(`💚 ${monk.name.split(' ')[0]} heilt 1 Dorfbewohner!`, "success");
+                        this.log(`💚 ${monk.shortName} heilt 1 Dorfbewohner!`, "success");
                     } else if (monk.health < 4) {
                         monk.health++;
-                        this.log(`💚 ${monk.name.split(' ')[0]} heilt sich selbst (+1 Qi)!`, "success");
+                        this.log(`💚 ${monk.shortName} heilt sich selbst (+1 Qi)!`, "success");
                     }
                 }
                 
-                // Blauer Mönch: Flug wird in moveMonk() behandelt
                 if (monk.canFly) {
-                    this.log(`✨ ${monk.name.split(' ')[0]} aktiviert Windläufer! Kann jetzt zu einem beliebigen Feld fliegen.`, "success");
+                    this.log(`✨ ${monk.shortName} aktiviert Windläufer! Kann jetzt zu einem beliebigen Feld fliegen.`, "success");
                 }
                 
-                // Gelber und Roter Mönch: Passive Fähigkeiten
                 if (monk.extraDie) {
-                    this.log(`⚔️ ${monk.name.split(' ')[0]} aktiviert Waffenmeister! Wirft beim nächsten Exorzismus 4 Würfel.`, "success");
+                    this.log(`⚔️ ${monk.shortName} aktiviert Waffenmeister! Wirft beim nächsten Exorzismus 4 Würfel.`, "success");
                 }
                 
                 if (monk.doubleDamage) {
-                    this.log(`🔥 ${monk.name.split(' ')[0]} aktiviert Flammenklinge! Zerstört 2 Geister pro Erfolg.`, "success");
+                    this.log(`🔥 ${monk.shortName} aktiviert Flammenklinge! Zerstört 2 Geister pro Erfolg.`, "success");
                 }
                 
                 this.updateStats();
@@ -1005,7 +1038,6 @@
                 this.buddhaCount--;
                 this.villages[this.selectedTile].buddha = true;
                 
-                // Buddha blockiert Geister
                 if (this.villages[this.selectedTile].ghostLevel > 0) {
                     this.villages[this.selectedTile].ghostLevel = 0;
                     this.villages[this.selectedTile].haunted = false;
@@ -1032,14 +1064,13 @@
                 }
                 
                 this.yinYang = Math.min(this.yinYang + 1, 8);
-                this.log(`🧘 ${monk.name.split(' ')[0]} meditiert und sammelt Qi. Yin-Yang: ${this.yinYang}`, "success");
+                this.log(`🧘 ${monk.shortName} meditiert und sammelt Qi. Yin-Yang: ${this.yinYang}`, "success");
                 
                 this.updateStats();
                 this.nextMonk();
             }
 
             nextMonk() {
-                // Prüfe ob alle Mönche dran waren
                 let allPlayed = true;
                 let nextIndex = this.currentMonk;
                 
@@ -1053,7 +1084,6 @@
                 }
                 
                 if (allPlayed) {
-                    // Runde vorbei, zurück zu Yin-Phase
                     this.phase = 'yin';
                     this.monks.forEach(m => m.hasPlayed = false);
                     this.log("🌙 Alle Mönche haben gespielt. Yin-Phase beginnt!", "ghost");
@@ -1098,7 +1128,6 @@
             }
         }
 
-        // Spiel starten
         const game = new GhostStoriesGame();
     </script>
 </body>

@@ -1,2 +1,2 @@
-# ghost-stories-digital
-ghost-stories-digital
+# Ghost Stories Digital
+Ein browser-basiertes Brettspiel
